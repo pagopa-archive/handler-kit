@@ -67,6 +67,12 @@ export const response =
 export const success = response(withStatus("200"));
 export const created = response(withStatus("201"));
 
+/**
+ * Converts an Error instance into a Problem Detail (RRFC 7807)
+ * JSON response. In order to protect sensitive information,
+ * the function returns a "SerializationError" if the error object lacks
+ * the necessary properties from the "Problem Detail" format.
+ */
 export const error = flow(
   O.fromPredicate(isProblemDetail),
   O.getOrElse((): ProblemDetail => new SerializationError()),
