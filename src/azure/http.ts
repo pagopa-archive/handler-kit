@@ -25,7 +25,7 @@ export const fromHttpRequest = (ctx: azure.Context) =>
       isHttpTriggeredFunctionContext,
       () =>
         new InvalidTriggerError(
-          "This function can be trigger only by an HTTP request"
+          "This function can be triggered only by an HTTP request"
         )
     ),
     E.map((ctx) => ctx.req),

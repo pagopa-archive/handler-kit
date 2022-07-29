@@ -38,7 +38,7 @@ export const fromBlobStorage =
         isBlobTriggeredFunctionContext,
         () =>
           new InvalidTriggerError(
-            "This function can be triggerd only by Blob Storage"
+            "This function can be triggered only by Blob Storage"
           )
       ),
       E.chainW((ctx) =>

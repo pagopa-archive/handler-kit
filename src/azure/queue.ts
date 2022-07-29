@@ -33,7 +33,7 @@ export const fromQueueMessage =
         isQueueTriggeredFunctionContext,
         () =>
           new InvalidTriggerError(
-            "This function can be triggerd only by a Queue Message"
+            "This function can be triggered only by a Queue Message"
           )
       ),
       E.map((ctx) => ctx.bindingData.QueueTrigger),
