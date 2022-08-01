@@ -36,7 +36,7 @@ export const fromQueueMessage =
             "This function can be triggered only by a Queue Message"
           )
       ),
-      E.map((ctx) => ctx.bindingData.QueueTrigger),
+      E.map((ctx) => ctx.bindingData.queueTrigger),
       E.chain(parse),
       E.chainW(validate(schema, "Unable to validate the Queue Message schema"))
     );
