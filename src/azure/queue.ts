@@ -6,8 +6,6 @@ import * as E from "fp-ts/Either";
 import * as O from "fp-ts/Option";
 import { pipe } from "fp-ts/function";
 
-import { parse } from "fp-ts/Json";
-
 import { validate } from "../validation";
 import { trigger, InvalidTriggerError } from "./trigger";
 
@@ -37,6 +35,5 @@ export const fromQueueMessage =
           )
       ),
       E.map((ctx) => ctx.bindingData.queueTrigger),
-      E.chain(parse),
       E.chainW(validate(schema, "Unable to validate the Queue Message schema"))
     );
