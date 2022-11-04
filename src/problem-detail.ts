@@ -13,8 +13,11 @@ export interface ProblemDetail {
 export const isProblemDetail = (u: unknown): u is ProblemDetail => {
   const problem = u as ProblemDetail;
   return (
+    "type" in problem &&
     problem.type.length > 0 &&
+    "status" in problem &&
     problem.status.length > 0 &&
+    "title" in problem &&
     problem.title.length > 0
   );
 };
