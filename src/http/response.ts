@@ -11,6 +11,8 @@ export type Response<T> = {
 export const isResponse = (u: unknown): u is Response<unknown> => {
   const resp = u as Response<unknown>;
   return (
+    typeof resp !== "undefined" &&
+    resp !== null &&
     typeof resp.statusCode == "number" &&
     Number.isInteger(resp.statusCode) &&
     typeof resp.headers === "object" &&

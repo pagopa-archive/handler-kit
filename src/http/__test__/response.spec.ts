@@ -21,6 +21,7 @@ describe.concurrent("response", () => {
     });
     it("should not pass on invalid response", () => {
       const invalid = [
+        undefined,
         {},
         {
           body: {
