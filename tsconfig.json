@@ -11,6 +11,5 @@
     "outDir": "lib",
     "noEmitOnError": true,
     "declaration": true
-  },
-  "exclude": ["src/**/*.spec.ts", "src/**/*.test.ts"]
+  }
 }
