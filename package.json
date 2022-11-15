@@ -1,39 +1,35 @@
 {
   "name": "@pagopa/handler-kit",
   "version": "0.3.3",
-  "description": "A simple functional toolkit for creating handlers that are agnostic to the framework and transport protocols utilized",
+  "description": "functional tookit for creating handlers",
   "main": "./lib/index.js",
-  "typings": "./lib/index.d.ts",
+  "types": "./lib/index.d.ts",
   "files": [
-    "lib"
+    "dist"
   ],
   "scripts": {
-    "test": "jest --coverage --verbose",
+    "build": "tsc",
     "format": "prettier --write .",
     "lint": "eslint src/**",
     "lint:fix": "eslint --fix src/**",
-    "build": "tsc",
-    "build:watch": "tsc -w"
+    "test": "vitest run --coverage ./src",
+    "typecheck": "tsc --noEmit"
   },
-  "author": "https://pagopa.it",
-  "license": "ISC",
   "dependencies": {
-    "fp-ts": "^2.12.1",
-    "io-ts": "^2.2.16"
+    "fp-ts": "^2.13.1",
+    "io-ts": "^2.2.19"
   },
   "devDependencies": {
     "@azure/functions": "^3.0.0",
     "@pagopa/danger-plugin": "^2.0.2",
     "@pagopa/eslint-config": "^3.0.0",
-    "@types/express": "^4.17.13",
-    "@types/jest": "^27.5.0",
-    "@types/node": "^17.0.32",
-    "danger": "^11.0.7",
-    "eslint": "^8.16.0",
-    "jest": "^28.1.0",
-    "jest-mock-extended": "^2.0.6",
-    "prettier": "2.6.2",
-    "ts-jest": "^28.0.2",
-    "typescript": "^4.6.4"
+    "@types/node": "^18.11.9",
+    "@vitest/coverage-c8": "^0.25.2",
+    "danger": "^11.2.0",
+    "eslint": "^8.27.0",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4",
+    "vite": "^3.2.3",
+    "vitest": "^0.25.2"
   }
 }

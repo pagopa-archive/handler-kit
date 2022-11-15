@@ -1,86 +1,72 @@
-import * as E from "fp-ts/Either";
-import * as O from "fp-ts/Option";
-
+import { pipe } from "fp-ts/lib/function";
 import { stringify } from "fp-ts/lib/Json";
-import { upsertAt } from "fp-ts/Record";
-import { flow } from "fp-ts/function";
+import * as E from "fp-ts/lib/Either";
 
-import * as t from "io-ts";
-import { isProblemDetail, ProblemDetail } from "../problem-detail";
+export type Response<T> = {
+  body: T;
+  statusCode: number;
+  headers: Record<string, string>;
+};
 
-class SerializationError extends Error implements ProblemDetail {
-  type = "/probs/serialization-error";
-  title = "Response serialization error";
-  status = "500";
-  constructor(
-    public readonly detail: string = "Unable to serialize the response."
-  ) {
-    super(detail);
-    this.name = "SerializationError";
-  }
-}
-
-const serialize = <T>(schema: t.Decoder<unknown, T>) =>
-  flow(
-    schema.decode,
-    E.chain(stringify),
-    E.mapLeft(() => new SerializationError())
+export const isResponse = (u: unknown): u is Response<unknown> => {
+  const resp = u as Response<unknown>;
+  return (
+    typeof resp.statusCode == "number" &&
+    Number.isInteger(resp.statusCode) &&
+    typeof resp.headers === "object" &&
+    resp.headers !== null &&
+    typeof resp.body !== "undefined" &&
+    resp.body !== null
   );
+};
 
-export const HttpResponse = t.type({
-  body: t.string,
-  statusCode: t.string,
-  headers: t.record(t.string, t.string),
+export const response = <T>(body: T): Response<T> => ({
+  body,
+  statusCode: 200,
+  headers: {},
 });
 
-export type HttpResponse = t.TypeOf<typeof HttpResponse>;
+export const empty: Response<undefined> = {
+  body: void 0,
+  statusCode: 204,
+  headers: {},
+};
 
-export const withStatus = (statusCode: string) => (res: HttpResponse) => ({
-  ...res,
-  statusCode,
-});
-
-export const withHeader =
-  (name: string, value: string) => (res: HttpResponse) => ({
-    ...res,
-    headers: upsertAt(name, value)(res.headers),
+export const withBody =
+  <B>(body: B) =>
+  <T>(response: Response<T>): Response<B> => ({
+    ...response,
+    body,
   });
 
-export const response =
-  (transform: (res: HttpResponse) => HttpResponse) =>
-  <T>(schema: t.Decoder<unknown, T>) =>
-    flow(
-      serialize(schema),
-      E.map(
-        (body: string): HttpResponse => ({
-          body,
-          statusCode: "200",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-      ),
-      E.map(transform),
-      E.getOrElse((e) => error(e))
-    );
+export const withStatusCode =
+  (statusCode: number) =>
+  <T>(response: Response<T>): Response<T> => ({
+    ...response,
+    statusCode,
+  });
 
-export const success = response(withStatus("200"));
-export const created = response(withStatus("201"));
-
-/**
- * Converts an Error instance into a Problem Detail (RRFC 7807)
- * JSON response. In order to protect sensitive information,
- * the function returns a "SerializationError" if the error object lacks
- * the necessary properties from the "Problem Detail" format.
- */
-export const error = flow(
-  O.fromPredicate(isProblemDetail),
-  O.getOrElse((): ProblemDetail => new SerializationError()),
-  (problem): HttpResponse => ({
-    statusCode: problem.status,
-    body: JSON.stringify(problem),
+export const withHeader =
+  (name: string, value: string) =>
+  <T>(response: Response<T>): Response<T> => ({
+    ...response,
     headers: {
-      "Content-Type": "application/problem+json",
+      ...response.headers,
+      [name]: value,
     },
-  })
-);
+  });
+
+export class SerializationError extends Error {
+  name = "SerializationError";
+}
+
+export const serializeToJSON = <T>(res: Response<T>) =>
+  pipe(
+    stringify(res.body),
+    E.mapLeft(
+      () =>
+        new SerializationError("Unable to serialize the HTTP response in JSON.")
+    ),
+    E.map((json) => pipe(res, withBody(json))),
+    E.map(withHeader("Content-Type", "application/json"))
+  );

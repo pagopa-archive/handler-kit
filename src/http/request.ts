@@ -1,10 +1,6 @@
 import * as t from "io-ts";
 
-import { pipe } from "fp-ts/function";
-import * as E from "fp-ts/Either";
-
 import { lookup } from "fp-ts/Record";
-import { ValidationError } from "../validation";
 
 const HttpMethod = t.keyof({
   GET: null,
@@ -33,13 +29,3 @@ const param = (type: ParameterType) => (name: string) => (req: HttpRequest) =>
 export const query = param("query");
 export const header = param("headers");
 export const path = param("params");
-
-export const body =
-  <T>({ decode }: t.Decoder<unknown, T>) =>
-  (req: HttpRequest) =>
-    pipe(
-      decode(req.body),
-      E.mapLeft(
-        (e) => new ValidationError(e, "Unable to validate the request body")
-      )
-    );
