@@ -4,8 +4,7 @@ const recordScope = {
   projectToScope: {
     SFEQS: "Firma con IO",
   },
-  tagToScope: {
-  },
+  tagToScope: {},
   minLenPrDescription: 10,
   updateLabel: false,
   updateTitle: false,
