@@ -48,7 +48,7 @@ jobs:
     continueOnError: false
     steps:
       - template: templates/node-job-setup/template.yaml@pagopaCommons
-      - script: yarn tsc --noEmit
+      - script: yarn typecheck
         displayName: "Run TypeScript compiler"
   - job: lint
     displayName: "Lint"
@@ -62,5 +62,5 @@ jobs:
     continueOnError: false
     steps:
       - template: templates/node-job-setup/template.yaml@pagopaCommons
-      - script: yarn jest --ci
+      - script: yarn test
         displayName: "Execute tests"
