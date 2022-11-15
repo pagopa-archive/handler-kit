@@ -6,8 +6,7 @@ import * as E from "fp-ts/Either";
 import * as O from "fp-ts/Option";
 import { pipe } from "fp-ts/function";
 
-import { validate } from "../validation";
-import { trigger, InvalidTriggerError } from "./trigger";
+import { InvalidTriggerError, trigger } from "./trigger";
 
 const isQueueTriggeredFunctionContext = (
   ctx: azure.Context
@@ -22,6 +21,15 @@ const isQueueTriggeredFunctionContext = (
     O.isSome
   );
 
+export class QueueMessageParseError extends Error {
+  name = "QueueMessageParseError";
+  queueMessage: unknown;
+  constructor(queueMessage: unknown) {
+    super("Unable to parse the Queue Message");
+    this.queueMessage = queueMessage;
+  }
+}
+
 export const fromQueueMessage =
   <T>(schema: t.Decoder<unknown, T>) =>
   (ctx: azure.Context) =>
@@ -35,5 +43,10 @@ export const fromQueueMessage =
           )
       ),
       E.map((ctx) => ctx.bindingData.queueTrigger),
-      E.chainW(validate(schema, "Unable to validate the Queue Message schema"))
+      E.chainW((message) =>
+        pipe(
+          schema.decode(message),
+          E.mapLeft(() => new QueueMessageParseError(message))
+        )
+      )
     );

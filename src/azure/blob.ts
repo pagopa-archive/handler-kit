@@ -7,8 +7,7 @@ import * as O from "fp-ts/Option";
 import { pipe } from "fp-ts/function";
 
 import { sequenceS } from "fp-ts/lib/Apply";
-import { validate } from "../validation";
-import { trigger, InvalidTriggerError } from "./trigger";
+import { InvalidTriggerError, trigger } from "./trigger";
 
 const isBlobTriggeredFunctionContext = (
   ctx: azure.Context
@@ -29,9 +28,18 @@ export type Blob<T> = {
   metadata: T;
 };
 
+export class BlobMetadataParseError extends Error {
+  name = "BlobMetadataParseError";
+  metadata: unknown;
+  constructor(metadata: unknown) {
+    super("Unable to parse the Blob Metadata");
+    this.metadata = metadata;
+  }
+}
+
 export const fromBlobStorage =
   <T>(metadataSchema: t.Decoder<unknown, T>) =>
-  (ctx: azure.Context): E.Either<Error, Blob<T>> =>
+  (ctx: azure.Context) =>
     pipe(
       ctx,
       E.fromPredicate(
@@ -43,10 +51,12 @@ export const fromBlobStorage =
       ),
       E.chainW((ctx) =>
         sequenceS(E.Apply)({
-          metadata: validate(
-            metadataSchema,
-            "Unable to validate the metadata schema"
-          )(ctx.bindingData.metadata),
+          metadata: pipe(
+            metadataSchema.decode(ctx.bindingData.metadata),
+            E.mapLeft(
+              () => new BlobMetadataParseError(ctx.bindingData.metadata)
+            )
+          ),
           uri: E.right(ctx.bindingData.uri),
         })
       )

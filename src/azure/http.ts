@@ -2,12 +2,11 @@ import * as azure from "@azure/functions";
 
 import * as O from "fp-ts/Option";
 import * as E from "fp-ts/Either";
-import { pipe } from "fp-ts/function";
+import { pipe, flow } from "fp-ts/function";
 
 import { HttpRequest } from "../http/request";
-import { validate } from "../validation";
 
-import { trigger, InvalidTriggerError } from "./trigger";
+import { InvalidTriggerError, trigger } from "./trigger";
 
 const isHttpTriggeredFunctionContext = (
   ctx: azure.Context
@@ -18,6 +17,15 @@ const isHttpTriggeredFunctionContext = (
     O.isSome
   );
 
+export class HttpRequestParseError extends Error {
+  name = "HttpRequestParseError";
+  req?: azure.HttpRequest;
+  constructor(req?: azure.HttpRequest) {
+    super("Unable to validate the HTTP request from Azure.");
+    this.req = req;
+  }
+}
+
 export const fromHttpRequest = (ctx: azure.Context) =>
   pipe(
     ctx,
@@ -25,9 +33,14 @@ export const fromHttpRequest = (ctx: azure.Context) =>
       isHttpTriggeredFunctionContext,
       () =>
         new InvalidTriggerError(
-          "This function can be triggered only by an HTTP request"
+          "This function can be triggered only by an HTTP request."
         )
     ),
     E.map((ctx) => ctx.req),
-    E.chainW(validate(HttpRequest, "Unable to validate the Azure HTTP request"))
+    E.chainW(
+      flow(
+        HttpRequest.decode,
+        E.mapLeft(() => new HttpRequestParseError(ctx.req))
+      )
+    )
   );
