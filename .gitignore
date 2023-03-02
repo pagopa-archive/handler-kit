@@ -5,3 +5,4 @@ lib
 local.settings.json
 .env*
 yarn-error.log
+.DS_Store

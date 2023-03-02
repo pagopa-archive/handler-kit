@@ -7,6 +7,7 @@ import * as http from "../http";
 export * from "./http";
 export * from "./queue";
 export * from "./blob";
+export * from "./eventHub";
 
 export const unsafeRun =
   <T>(handler: Handler<Context, T>): AzureFunction =>
