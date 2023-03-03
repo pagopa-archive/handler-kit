@@ -10,11 +10,7 @@ import { InvalidTriggerError, trigger } from "./trigger";
 
 const isEventHubTriggeredFunctionContext = (
   ctx: azure.Context
-): ctx is azure.Context & {
-  bindingData: {
-    eventHubTrigger: string;
-  };
-} =>
+): ctx is azure.Context =>
   pipe(
     trigger(ctx.bindingDefinitions),
     O.filter((t) => t.type === "eventHubTrigger"),
@@ -29,9 +25,11 @@ export class EventHubMessageParseError extends Error {
     this.eventHubMessage = eventHubMessage;
   }
 }
-
+/* eventName is the name of the variable that represents the event item in function code.
+ * Is equivalent to the name in function.json
+ */
 export const fromEventHubMessage =
-  <T>(schema: t.Decoder<unknown, T>) =>
+  <T>(schema: t.Decoder<unknown, T>, eventName: string) =>
   (ctx: azure.Context) =>
     pipe(
       ctx,
@@ -39,10 +37,10 @@ export const fromEventHubMessage =
         isEventHubTriggeredFunctionContext,
         () =>
           new InvalidTriggerError(
-            "This function can be triggered only by a Event Hub Message"
+            "This function can be triggered only by an Event Hub Message"
           )
       ),
-      E.map((ctx) => ctx.bindingData.eventHubTrigger),
+      E.map((ctx) => ctx.bindings[eventName]),
       E.chainW((message) =>
         pipe(
           schema.decode(message),
