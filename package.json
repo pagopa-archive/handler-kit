@@ -1,6 +1,6 @@
 {
   "name": "@pagopa/handler-kit",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "functional tookit for creating handlers",
   "main": "./lib/index.js",
   "types": "./lib/index.d.ts",
